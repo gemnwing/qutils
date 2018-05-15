@@ -14,10 +14,10 @@ import java.util.Locale;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.njcp.service.util.I18N;
+
 public class QLog {
 
-	private static File debugFile = new File("debug");
-	private static File timerFile = new File("timer");
 	private static final String BRACE_L = "[";
 	private static final String BRACE_R = "]";
 	private static final String SPACE = " ";
@@ -35,7 +35,10 @@ public class QLog {
 
 	protected static enum Level {
 		PRINT, TRACE, DEBUG, INFO, WARN, ERROR, FATAL
-	};
+	}
+
+	private static File debugFile;
+	private static File timerFile;
 
 	private static ThreadLocal<String> customPrefix = new ThreadLocal<String>();
 	private static ThreadLocal<Boolean> debugFlag = new ThreadLocal<Boolean>();
@@ -51,12 +54,14 @@ public class QLog {
 	private static Long lastModifiedTime = 0L;
 
 	static {
+		setDebugFile(new File("debug"));
+		setTimerFile(new File("timer"));
 		checkDebugFlag();
 	}
 
 	private static String genFakePrefix(Level level, StackTraceElement caller) {
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Timestamp(System.currentTimeMillis())) + " " + BRACE_L + getSimpleClassName(caller) + BRACE_R + "-"
-				+ BRACE_L + level.name() + BRACE_R + SPACE;
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Timestamp(System.currentTimeMillis())) + " " + BRACE_L + getSimpleClassName(caller) + BRACE_R + "-" + BRACE_L + level.name()
+				+ BRACE_R + SPACE;
 	}
 
 	public static Log getLog(StackTraceElement caller) {
@@ -98,11 +103,9 @@ public class QLog {
 	}
 
 	private static String getThreadIcon() {
-		return BRACE_L + Thread.currentThread()
-				// .getId()
-				.getName()
+		// .getId()
 		// in case formatter combine this line
-				+ BRACE_R;
+		return BRACE_L + Thread.currentThread().getName() + BRACE_R;
 	}
 
 	public static String getSimpleClassName(StackTraceElement ste) {
@@ -127,6 +130,7 @@ public class QLog {
 	}
 
 	public static void setDebugFile(File debugFile) {
+		info(I18N.tr("Debug mode switch file has been set to <{0}>", debugFile.getAbsolutePath()));
 		QLog.debugFile = debugFile;
 		checkDebugFlag();
 	}
@@ -136,6 +140,7 @@ public class QLog {
 	}
 
 	public static void setTimerFile(File timerFile) {
+		info(I18N.tr("Timer mode switch file has been set to <{0}>", timerFile.getAbsolutePath()));
 		QLog.timerFile = timerFile;
 		checkDebugFlag();
 	}
@@ -221,8 +226,8 @@ public class QLog {
 		if ( e == null ) {
 			retStr = EMPTY + logStr;
 		} else {
-			retStr = (EMPTY + logStr).replaceAll("[\\.,:;。，：；][ ]*$", EMPTY);
-			String exception = e.toString().replaceAll("[\\.,:;。，：；][ ]*$", EMPTY);
+			retStr = (EMPTY + logStr).replaceAll("[\\.,:;ãï¼ï¼ï¼][ ]*$", EMPTY);
+			String exception = e.toString().replaceAll("[\\.,:;ãï¼ï¼ï¼][ ]*$", EMPTY);
 			retStr = retStr + ", " + exception + ((e.getCause() == null) ? "." : I18N.tr(", caused by: ") + e.getCause());
 		}
 		return retStr;
@@ -402,8 +407,7 @@ public class QLog {
 			symbol = BRACE_L + Level.DEBUG.name() + BRACE_R;
 		}
 		logStr = (getCustomPrefix().isEmpty() ? EMPTY : BRACE_L + getCustomPrefix() + BRACE_R) + getThreadIcon() + symbol.replace("]", " ") + getSimpleClassName(caller) + "." + caller.getMethodName()
-				+ "(" + caller.getFileName() + ":"
-				+ caller.getLineNumber() + ")" + BRACE_R + SPACE + logStr;
+				+ "(" + caller.getFileName() + ":" + caller.getLineNumber() + ")" + BRACE_R + SPACE + logStr;
 		Log log = getLog(caller);
 		if ( log != null && level != Level.TRACE ) {
 			switch ( level ) {
@@ -540,7 +544,6 @@ public class QLog {
 
 	private static void setLastLogEndsWithoutNewline(boolean lastLogEndsWithoutANewline) {
 		QLog.lastLogEndsWithoutANewline.set(lastLogEndsWithoutANewline);
-		;
 	}
 
 }

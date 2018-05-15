@@ -42,10 +42,6 @@ public class QStringUtil {
 		return retStr;
 	}
 
-	public static String cutString(Object str, int size) {
-		return cutString(str, size, Charset.defaultCharset());
-	}
-
 	public static int charCount(Object str) {
 		if ( str == null ) {
 			return 0;
@@ -60,9 +56,26 @@ public class QStringUtil {
 		return str.toString().getBytes(charset).length;
 	}
 
+	public static String cutString(Object str, int size) {
+		return cutString(str, size, Charset.defaultCharset(), false);
+	}
+
+	public static String cutStringWithEllipsis(Object str, int size) {
+		return cutString(str, size, Charset.defaultCharset(), true);
+	}
+
 	public static String cutString(Object str, int size, Charset charset) {
+		return cutString(str, size, charset, false);
+	}
+
+	public static String cutString(Object str, int size, Charset charset, boolean withEllipsis) {
 		if ( charCount(str, charset) <= Math.abs(size) ) {
 			return str.toString();
+		}
+		String suffix = "";
+		if ( withEllipsis ) {
+			suffix = "...";
+			size -= 3;
 		}
 		StringBuffer sb = new StringBuffer(str.toString());
 		boolean fromRight = false;
@@ -81,9 +94,9 @@ public class QStringUtil {
 			}
 		}
 		if ( fromRight ) {
-			return sb.delete(idx, sb.length()).reverse().toString();
+			return sb.delete(idx, sb.length()).reverse().toString() + suffix;
 		} else {
-			return sb.substring(0, idx);
+			return sb.substring(0, idx) + suffix;
 		}
 	}
 
