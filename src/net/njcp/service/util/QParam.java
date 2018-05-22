@@ -549,7 +549,7 @@ public class QParam extends Properties {
 
 	public StackTraceElement getCaller() {
 		if ( this.caller == null ) {
-			this.caller = Thread.currentThread().getStackTrace()[3];
+			this.caller = new Throwable().getStackTrace()[2];
 		}
 		return this.caller;
 	}

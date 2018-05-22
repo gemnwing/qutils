@@ -2,11 +2,11 @@ package net.njcp.service.util;
 
 public class QRuntimeUtil {
 	public static int getCallerIndex() {
-		int retInt = 3;
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		int retInt = 2;
+		StackTraceElement[] stackTrace = new Throwable().getStackTrace();
 		Class<?> caller = null;
 		try {
-			caller = Class.forName(stackTrace[2].getClassName());
+			caller = Class.forName(stackTrace[1].getClassName());
 		} catch ( ClassNotFoundException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

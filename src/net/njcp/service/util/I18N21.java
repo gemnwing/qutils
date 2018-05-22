@@ -160,7 +160,7 @@ public class I18N21 {
 		@Override
 		public String toString() {
 			String retStr = "";
-			for ( Message message : this.values() ) {
+			for ( Message message : values() ) {
 				retStr += message.toString();
 			}
 			return retStr;
@@ -186,14 +186,14 @@ public class I18N21 {
 		}
 
 		public String getTranslation() {
-			return translation;
+			return this.translation;
 		}
 
 		public LinkedHashSet<String> getLocations() {
 			if ( this.locations == null ) {
 				this.locations = new LinkedHashSet<String>();
 			}
-			return locations;
+			return this.locations;
 		}
 
 		public void addLocations(String... locations) {
@@ -209,7 +209,7 @@ public class I18N21 {
 		}
 
 		public String getComment() {
-			return comment;
+			return this.comment;
 		}
 
 		public void setComment(String comment) {
@@ -217,7 +217,7 @@ public class I18N21 {
 		}
 
 		public String getSource() {
-			return source;
+			return this.source;
 		}
 
 		public void setSource(String source) {
@@ -270,7 +270,7 @@ public class I18N21 {
 	}
 
 	private static Bundle getBundle() {
-		String className = Thread.currentThread().getStackTrace()[3].getClassName().replaceAll("^.*\\.", "");
+		String className = new Throwable().getStackTrace()[2].getClassName().replaceAll("^.*\\.", "");
 		if ( className.contains("$") ) {
 			className = className.replaceAll("\\$.*$", "");
 		}
@@ -279,7 +279,7 @@ public class I18N21 {
 				if ( !bundleMap.containsKey(className) ) {
 					Class<?> clazz = null;
 					try {
-						clazz = Class.forName(Thread.currentThread().getStackTrace()[3].getClassName());
+						clazz = Class.forName(new Throwable().getStackTrace()[2].getClassName());
 					} catch ( ClassNotFoundException e ) {
 						e.printStackTrace();
 					}

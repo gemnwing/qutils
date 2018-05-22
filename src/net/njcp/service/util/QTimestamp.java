@@ -382,6 +382,12 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 		return new QTimestamp(timeInMillis);
 	}
 
+	public static QTimestamp valueOfUtc(long timeInMillis) {
+		QTimestamp qt = new QTimestamp(timeInMillis);
+		qt.setTime(qt.getTime() - qt.getTimezoneOffsetInMillis());
+		return qt;
+	}
+
 	public static QTimestamp valueOf(String s) {
 		if ( s == null ) {
 			throw new NullPointerException();
@@ -514,8 +520,20 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 		this.nanos = nanos;
 	}
 
+	public static String niceDisplay(long time) {
+		StringBuilder retSb = new StringBuilder();
+		QTimestamp qt = QTimestamp.valueOfUtc(time);
+		return retSb.append(QStringUtil.countableDesc(qt.getYear() - 1970, "year", 3))
+				.append(QStringUtil.countableDesc(qt.getMonth() - 1, "month", 3))
+				.append(QStringUtil.countableDesc(qt.getDay() - 1, "day", 3))
+				.append(QStringUtil.countableDesc(qt.getHours(), "hour", 3))
+				.append(QStringUtil.countableDesc(qt.getMinutes(), "minute", 3))
+				.append(QStringUtil.countableDesc(qt.getSeconds(), "second"))
+				.toString();
+	}
+
 	public static void main(String[] args) {
-		QLog.println(QTimestamp.valueOf("33401-OBJ_110-20180205155812160133.JSON+ADA.DT"));
+		QLog.println(niceDisplay(12000));
 	}
 
 }

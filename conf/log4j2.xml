@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="5">
+	<Properties>
+		<Property name="filename">logs/qutils.log</Property>
+		<Property name="filepattern">logs/qutils-%d{MM-dd-yyyy}.log</Property>
+	</Properties>
+	<Appenders>
+		<Console name="PLATFORM" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{ISO8601}] SG-UAP :%5p %c{1}:%L - %m%n" />
+		</Console>
+		<Console name="THIRDPARTY" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{ISO8601}] Third's :%5p %c{1}:%L - %m%n" />
+		</Console>
+		<RollingFile name="PLATFORMFILE" fileName="${filename}" filePattern="${filepattern}" ignoreExceptions="false">
+			<PatternLayout pattern="[%d{ISO8601}] SG-UAP :%-5p %-x %X{user} %n     %m%n" />
+			<TimeBasedTriggeringPolicy />
+		</RollingFile>
+		<RollingFile name="THIRDPARTYFILE" fileName="${filename}" filePattern="${filepattern}" ignoreExceptions="false">
+			<PatternLayout pattern="[%d{ISO8601}] Third's :%-5p %-x %X{user} %n     %m%n" />
+			<TimeBasedTriggeringPolicy />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+ 		<Logger name="com.sgcc" level="error" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+ 		<Logger name="org.hibernate" level="error">
+			<AppenderRef ref="THIRDPARTY"/>
+		</Logger>
+ 		<Logger name="org.springframework" level="error">
+			<AppenderRef ref="THIRDPARTY"/>
+		</Logger>
+ 		<Logger name="org.apache" level="error">
+			<AppenderRef ref="THIRDPARTY"/>
+		</Logger>
+		<Logger name="com.nari.osp.test" level="error" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.sysadmin.service" level="info" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>	
+		<Logger name="com.nari.osp.dbaccess" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.sample" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.fes" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.db.commit" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.db.rep" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.alarm.server" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.graph" level="debug" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="com.nari.osp.graphdata" level="debug" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>	
+		<Logger name="com.nari.osp.sample.query" level="debug" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Logger name="org.h2" level="fatal" additivity="false">
+			<AppenderRef ref="PLATFORMFILE"/>
+		</Logger>
+		<Logger name="com.nari.osp.report" level="debug" additivity="false">
+			<AppenderRef ref="PLATFORM"/>
+		</Logger>
+		<Root level="warn">
+			<AppenderRef ref="PLATFORMFILE"/>
+		</Root>
+	</Loggers>
+</Configuration>
+
+

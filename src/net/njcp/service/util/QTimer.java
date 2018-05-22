@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.njcp.service.util.QLog.Level;
 
+import net.njcp.service.util.I18N;
+
 public class QTimer {
 	private static ThreadLocal<HashMap<String, Long>> markMap = new ThreadLocal<HashMap<String, Long>>();
 	private static final String LAST_OPERATION = I18N.tr("Operation since last timer mark");
@@ -21,12 +23,12 @@ public class QTimer {
 
 	public static void setTimeMark() {
 		getMarkMap().put(LAST_OPERATION, System.currentTimeMillis());
-		QLog.timer(Level.DEBUG, I18N.tr("New timer mark sets here."), Thread.currentThread().getStackTrace()[2]);
+		QLog.timer(Level.DEBUG, I18N.tr("New timer mark sets here."), new Throwable().getStackTrace()[1]);
 	}
 
 	public static void setTimeMark(String mark) {
 		getMarkMap().put(mark, System.currentTimeMillis());
-		QLog.timer(Level.DEBUG, I18N.tr("{0} begins.", mark), Thread.currentThread().getStackTrace()[2]);
+		QLog.timer(Level.DEBUG, I18N.tr("{0} begins.", mark), new Throwable().getStackTrace()[1]);
 	}
 
 	public static Long getTimeElapsedInMillis() {
@@ -71,7 +73,7 @@ public class QTimer {
 	}
 
 	private static void genATimerLog(String mark, long threshold) {
-		StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
+		StackTraceElement caller = new Throwable().getStackTrace()[2];
 		Level level = Level.DEBUG;
 		long timeElapsed = getTimeElapsedInMillis(mark);
 		String log = I18N.tr("{0} takes {1}", mark, format(timeElapsed));
@@ -113,7 +115,7 @@ public class QTimer {
 	 * @param descs
 	 */
 	public static void countdown(int time, TimeUnit unit, Object... descs) {
-		StackTraceElement caller = Thread.currentThread().getStackTrace()[2];
+		StackTraceElement caller = new Throwable().getStackTrace()[1];
 		Level level = Level.INFO;
 		String name = "";
 		String action = "";
@@ -123,20 +125,20 @@ public class QTimer {
 				action = descs[1] == null ? "" : descs[1].toString().toLowerCase();
 			}
 		}
-		String actionDesc = (name.isEmpty() ? "" : name + " ") + action;
-		QLog.timer(level, "This is " + (actionDesc.isEmpty() ? "" : actionDesc) + "launch control, " + (actionDesc.isEmpty() ? "launching " : actionDesc + " ") + "starts in " + time + " "
-				+ unit.name().toLowerCase() + ".", caller);
+		String actionDesc = (name.isEmpty() ? "" : name) + (action.isEmpty() ? "" : " " + action);
+		QLog.timer(level, I18N.tr("This is {0} launch control, {1} starts in {2} {3}.", (actionDesc.isEmpty() ? "" : actionDesc), (actionDesc.isEmpty() ? I18N.tr("launching") : actionDesc), time,
+				unit.name().toLowerCase()), caller);
 		try {
 			long millis = unit.toMillis(time);
 			while ( millis > 0 ) {
 				long now = System.currentTimeMillis();
 				if ( millis % (5 * 60 * 1000) == 0 || (millis <= 5 * 60 * 1000 && millis % (60 * 1000) == 0) ) {
-					QLog.timer(level, "T minus " + millis / (60 * 1000) + " minutes and counting.", caller);
+					QLog.timer(level, I18N.tr("T minus {0} minutes and counting.", millis / (60 * 1000)), caller);
 				} else if ( millis < 60 * 1000 && millis % 10000 == 0 && millis != 10000 ) {
-					QLog.timer(level, "T minus " + millis / 1000 + " seconds and counting.", caller);
+					QLog.timer(level, I18N.tr("T minus {0} seconds and counting.", millis / 1000), caller);
 				} else if ( millis <= 10 * 1000 ) {
 					if ( millis == 10 * 1000 ) {
-						QLog.timer(level, "T minus 10 seconds and counting.", caller);
+						QLog.timer(level, I18N.tr("T minus 10 seconds and counting."), caller);
 					} else {
 						QLog.timer(level, millis / 1000, caller);
 					}
@@ -147,12 +149,12 @@ public class QTimer {
 				millis -= 1000;
 			}
 		} catch ( InterruptedException e ) {
-			QLog.timer(level, QStringUtil.titleCase(name) + " " + action + time + " " + unit.name().toLowerCase() + " process interrupted", caller);
+			QLog.timer(level, I18N.tr("{0} {1}{2} {3} process interrupted", QStringUtil.titleCase(name), action, time, unit.name().toLowerCase()), caller);
 		}
 	}
 
 	public static void main(String[] args) {
-		countdown(21, TimeUnit.SECONDS, "Load forecast service");
+		countdown(21, TimeUnit.SECONDS, "Load forecast service", "launching");
 		// QLog.println(QStringUtil.repeat("*", 10));
 	}
 }

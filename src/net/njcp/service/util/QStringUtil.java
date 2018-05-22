@@ -11,6 +11,10 @@ public class QStringUtil {
 	private static final String[] DIGIT_SCALE = new String[] { "", "十", "百", "千" };
 	private static final int PATTERN_OPTION = Pattern.DOTALL | Pattern.MULTILINE;
 
+	public static final int WITH_LEADING_SPACE = 1;
+	public static final int DISPLAY_ZERO_ANYWAY = 2;
+	public static final int WITH_END_SPACE = 3;
+
 	private static ConcurrentHashMap<String, Pattern> patterns = new ConcurrentHashMap<String, Pattern>();
 
 	public static boolean match(Object stringObject, String paramString) {
@@ -196,6 +200,56 @@ public class QStringUtil {
 		return titleCase(input, true).replaceAll("[^0-9A-Za-z]", "");
 	}
 
+	public static String countableDesc(Integer num, String str, Integer... options) {
+		boolean showZero = false;
+		boolean leadingSpace = false;
+		boolean followingSpace = false;
+		if ( options.length != 0 ) {
+			for ( Integer opt : options ) {
+				if ( opt != null ) {
+					switch ( opt ) {
+					case WITH_LEADING_SPACE:
+						leadingSpace = true;
+						break;
+					case WITH_END_SPACE:
+						followingSpace = true;
+						break;
+					case DISPLAY_ZERO_ANYWAY:
+						showZero = true;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		StringBuilder retSb = new StringBuilder();
+		if ( num == null || (showZero && num < 0) || (!showZero && num <= 0) ) {
+			return retSb.toString();
+		}
+		if ( leadingSpace ) {
+			retSb.append(" ");
+		}
+		retSb.append(num).append(" ").append(str);
+		if ( num > 1 ) {
+			switch ( retSb.charAt(retSb.length() - 1) ) {
+			case 's':
+				retSb.append("es");
+			case 'y':
+				retSb.deleteCharAt(retSb.length() - 1);
+				retSb.append("ies");
+				break;
+			default:
+				retSb.append("s");
+				break;
+			}
+		}
+		if ( followingSpace ) {
+			retSb.append(" ");
+		}
+		return retSb.toString();
+	}
+
 	public static String repeat(Object str, int times) {
 		if ( str == null ) {
 			return null;
@@ -208,6 +262,6 @@ public class QStringUtil {
 	}
 
 	public static void main(String[] args) {
-		QLog.println(sentenceCase(1234));
+		QLog.println(countableDesc(-1, "apple"));
 	}
 }

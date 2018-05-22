@@ -264,7 +264,7 @@ public class I18N {
 	}
 
 	private static Bundle getBundle() {
-		String className = Thread.currentThread().getStackTrace()[3].getClassName().replaceAll("^.*\\.", "");
+		String className = new Throwable().getStackTrace()[2].getClassName().replaceAll("^.*\\.", "");
 		if ( className.contains("$") ) {
 			className = className.replaceAll("\\$.*$", "");
 		}
@@ -273,7 +273,7 @@ public class I18N {
 				if ( !bundleMap.containsKey(className) ) {
 					Class<?> clazz = null;
 					try {
-						clazz = Class.forName(Thread.currentThread().getStackTrace()[3].getClassName());
+						clazz = Class.forName(new Throwable().getStackTrace()[2].getClassName());
 					} catch ( ClassNotFoundException e ) {
 						e.printStackTrace();
 					}
