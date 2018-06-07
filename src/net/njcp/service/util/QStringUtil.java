@@ -3,7 +3,11 @@ package net.njcp.service.util;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QStringUtil {
@@ -37,13 +41,13 @@ public class QStringUtil {
 	}
 
 	public static String times(String s, int n) {
-		String retStr = s;
-		if ( n > 1 ) {
-			for ( int i = 1; i < n; i++ ) {
-				retStr += s;
+		StringBuilder retSb = new StringBuilder();
+		if ( n >= 1 ) {
+			for ( int i = 1; i <= n; i++ ) {
+				retSb.append(s);
 			}
 		}
-		return retStr;
+		return retSb.toString();
 	}
 
 	public static int charCount(Object str) {
@@ -73,8 +77,8 @@ public class QStringUtil {
 	}
 
 	public static String cutString(Object str, int size, Charset charset, boolean withEllipsis) {
-		if ( charCount(str, charset) <= Math.abs(size) ) {
-			return str.toString();
+		if ( str == null || charCount(str, charset) <= Math.abs(size) ) {
+			return String.valueOf(str);
 		}
 		String suffix = "";
 		if ( withEllipsis ) {
@@ -261,7 +265,80 @@ public class QStringUtil {
 		return sb.toString();
 	}
 
+	public static List<String> asStringList(Object... args) {
+		if ( args == null ) {
+			return null;
+		}
+		List<String> retList = new ArrayList<String>();
+		for ( Object arg : args ) {
+			if ( arg == null ) {
+				retList.add(null);
+			} else {
+				if ( arg instanceof Collection<?> ) {
+					retList.addAll(asStringList(((Collection<?>) arg).toArray()));
+				} else if ( arg instanceof boolean[] ) {
+					for ( Object o : ((boolean[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof char[] ) {
+					for ( Object o : ((char[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof byte[] ) {
+					for ( Object o : ((byte[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof short[] ) {
+					for ( Object o : ((short[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof int[] ) {
+					for ( Object o : ((int[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof long[] ) {
+					for ( Object o : ((long[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof float[] ) {
+					for ( Object o : ((float[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof double[] ) {
+					for ( Object o : ((double[]) arg) ) {
+						retList.add(o.toString());
+					}
+				} else if ( arg instanceof Object[] ) {
+					retList.addAll(asStringList((Object[]) arg));
+				} else {
+					retList.add(arg.toString());
+				}
+			}
+		}
+		return retList;
+	}
+
+	/**
+	 * @param paramStr
+	 * @param regex is a regex pattern
+	 * @return
+	 */
+	public static String extract(Object paramStr, String regex) {
+		if ( paramStr == null ) {
+			return null;
+		}
+		String retStr = paramStr.toString();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(retStr);
+		if ( matcher.find() ) {
+			retStr = matcher.group();
+		} else {
+			retStr = "";
+		}
+		return retStr;
+	}
+
 	public static void main(String[] args) {
-		QLog.println(countableDesc(-1, "apple"));
+		System.out.println(extract("5 more tries and I'll do it, I REALLY mean it this time.","REA.*LLY"));
 	}
 }

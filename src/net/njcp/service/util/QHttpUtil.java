@@ -3,11 +3,15 @@ package net.njcp.service.util;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -18,11 +22,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.util.MultiValueMap;
 
 public class QHttpUtil {
 
 	private final static String USER_AGENT = "Mozilla/5.0";
 	private final static String CHARSET = "UTF-8";
+	private final static int MAX_DEBUG_STRING_LENGTH = 50;
 
 	private static String toUrlString(Object str) {
 		if ( str == null ) {
@@ -36,91 +42,176 @@ public class QHttpUtil {
 		}
 	}
 
+	public static class LinkedMultiValueMap<K, V> extends LinkedHashMap<K, List<V>> implements MultiValueMap<K, V> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void add(K key, V value) {
+			List<V> values = containsKey(key) ? get(key) : new ArrayList<V>();
+			values.add(value);
+			put(key, values);
+		}
+
+		@Override
+		public V getFirst(K key) {
+			if ( !containsKey(key) || get(key).size() == 0 ) {
+				return null;
+			}
+			return get(key).get(0);
+		}
+
+		@Override
+		public void set(K key, V value) {
+			List<V> values = new ArrayList<V>();
+			values.add(value);
+			put(key, values);
+		}
+
+		@Override
+		public void setAll(Map<K, V> values) {
+			for ( K key : values.keySet() ) {
+				set(key, values.get(key));
+			}
+		}
+
+		@Override
+		public Map<K, V> toSingleValueMap() {
+			LinkedHashMap<K, V> retMap = new LinkedHashMap<K, V>();
+			for ( K key : keySet() ) {
+				retMap.put(key, getFirst(key));
+			}
+			return retMap;
+		}
+
+	}
+
+	public static class ParameterMap extends LinkedMultiValueMap<String, String> {
+		private static final long serialVersionUID = 1L;
+
+		public void add(String key, Object value) {
+			add(key, value == null ? null : String.valueOf(value));
+		}
+
+		public String getSingleValue(String key, String defaultValue) {
+			List<String> values = get(key);
+			if ( values != null && !values.isEmpty() ) {
+				for ( String value : values ) {
+					if ( values != null ) {
+						return value;
+					}
+				}
+			}
+			return defaultValue;
+		}
+
+		public static ParameterMap parse(String paramStr) {
+			ParameterMap queryParameters = new ParameterMap();
+			if ( paramStr == null || paramStr.length() == 0 ) {
+				return queryParameters;
+			}
+			int s = 0;
+			do {
+				final int e = paramStr.indexOf('&', s);
+				if ( e == -1 ) {
+					decodeQueryParam(queryParameters, paramStr.substring(s));
+				} else if ( e > s ) {
+					decodeQueryParam(queryParameters, paramStr.substring(s, e));
+				}
+				s = e + 1;
+			} while ( s > 0 && s < paramStr.length() );
+			return queryParameters;
+		}
+
+		private static void decodeQueryParam(ParameterMap params, String param) {
+			try {
+				final int equals = param.indexOf('=');
+				if ( equals > 0 ) {
+					String key = URLDecoder.decode(param.substring(0, equals), "UTF-8");
+					String value = URLDecoder.decode(param.substring(equals + 1), "UTF-8");
+					params.add(key, value);
+				} else if ( equals == 0 ) {
+					// no key declared, ignore
+				} else if ( param.length() > 0 ) {
+					String key = URLDecoder.decode(param, "UTF-8");
+					params.add(key, "");
+				}
+			} catch ( final UnsupportedEncodingException ex ) {
+				// This should never occur
+				throw new IllegalArgumentException(ex);
+			}
+		}
+	}
+
+	public static MultiValueMap<String, String> decodeQuery(String q) {
+		return ParameterMap.parse(q);
+	}
+
 	// HTTP GET request
-	public static String sendGet(String url, Object... args) throws Exception {
-		String retStr = null;
+	public static HttpResponse sendGet(String url, Object... args) throws Exception {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 		HttpClient client = builder.build();
 
 		// add request header
-		StringBuilder urlWithParams = new StringBuilder(url);
-		boolean firstArg = true;
-		for ( int i = 0; i < args.length; i += 2 ) {
-			Object key = args[i];
-			if ( key == null || i + 1 >= args.length ) {
-				continue;
-			}
-			key = toUrlString(key);
-			if ( args[i + 1] instanceof List ) {
-				List<?> values = (List<?>) args[i + 1];
-				for ( Object value : values ) {
-					urlWithParams.append(firstArg ? "?" : "&").append(key).append("=").append((value == null) ? "" : toUrlString(value));
-				}
-			} else {
-				Object value = args[i + 1];
-				urlWithParams.append(firstArg ? "?" : "&").append(key).append("=").append((value == null) ? "" : toUrlString(value));
-			}
-			firstArg = false;
-		}
+		StringBuilder urlWithParams = buildUrlWithArgs(url, args);
 
 		HttpGet request = new HttpGet(urlWithParams.toString());
 		request.addHeader("User-Agent", USER_AGENT);
+		request.addHeader("charset", "UTF-8");
 
 		HttpResponse response = client.execute(request);
 
-		QLog.debug("Sending 'GET' request to URL : " + urlWithParams);
-		QLog.debug("Response Code : " + response.getStatusLine().getStatusCode());
-
-		BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-		String line = null;
-		while ( (line = br.readLine()) != null ) {
-			retStr = (retStr == null ? "" : retStr) + line + "\n";
+		if ( QLog.isDebugMode() ) {
+			QLog.debug("Sending 'GET' request to URL: " + urlWithParams);
+			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
+			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
 		}
-
-		return retStr.replaceAll("\n$", "");
+		return response;
 
 	}
 
+	public static String getContent(HttpResponse response) {
+		StringBuilder retSb = new StringBuilder();
+		try {
+			Charset charset = null;
+			try {
+				for ( HeaderElement element : response.getHeaders("Content-Type")[0].getElements() ) {
+					NameValuePair nv = element.getParameterByName("charset");
+					charset = Charset.forName(nv.getValue());
+					break;
+				}
+			} catch ( Throwable t ) {
+				charset = Charset.defaultCharset();
+			}
+			BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), charset));
+			String line = null;
+			while ( (line = br.readLine()) != null ) {
+				retSb.append(line).append("\n");
+			}
+		} catch ( Throwable t ) {
+			QLog.error("Failed to get content from response.", t);
+		}
+		return retSb.toString().replaceAll("\n$", "");
+	}
+
 	// HTTP POST request
-	public static String sendPost(String url, Object... args) throws Exception {
+	public static HttpResponse sendPost(String url, Object... args) throws Exception {
 		return processPostRequest(url, null, null, args);
 	}
 
 	// HTTP POST request
-	public static String sendPostWithHeadersAndEntities(String url, Map<?, ?> headers, Map<?, ?> entities, Object... args) throws Exception {
+	public static HttpResponse sendPostWithHeadersAndEntities(String url, Map<?, ?> headers, Map<?, ?> entities, Object... args) throws Exception {
 		return processPostRequest(url, headers, entities, args);
 	}
 
-	public static String sendPostWithHeadersAndSingleEntity(String url, Map<?, ?> headers, String entity, Object... args) throws Exception {
+	public static HttpResponse sendPostWithHeadersAndSingleEntity(String url, Map<?, ?> headers, String entity, Object... args) throws Exception {
 		return processPostRequest(url, headers, entity, args);
 	}
 
-	private static String processPostRequest(String url, Map<?, ?> headers, Object entityParam, Object... args) throws Exception {
-		String retStr = null;
+	private static HttpResponse processPostRequest(String url, Map<?, ?> headers, Object entityParam, Object... args) throws Exception {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 		HttpClient client = builder.build();
 
-		StringBuilder urlWithParams = new StringBuilder(url);
-		boolean firstArg = true;
-		for ( int i = 0; i < args.length; i += 2 ) {
-			Object key = args[i];
-			if ( key == null || i + 1 >= args.length ) {
-				continue;
-			}
-			key = toUrlString(key);
-			if ( args[i + 1] instanceof List ) {
-				List<?> values = (List<?>) args[i + 1];
-				for ( Object value : values ) {
-					urlWithParams.append(firstArg ? "?" : "&").append(key).append("=").append((value == null) ? "" : toUrlString(value));
-				}
-			} else {
-				Object value = args[i + 1];
-				urlWithParams.append(firstArg ? "?" : "&").append(key).append("=").append((value == null) ? "" : toUrlString(value));
-			}
-			firstArg = false;
-		}
-
+		StringBuilder urlWithParams = buildUrlWithArgs(url, args);
 		HttpPost post = new HttpPost(urlWithParams.toString());
 		// add header
 		post.setHeader("User-Agent", USER_AGENT);
@@ -131,6 +222,7 @@ public class QHttpUtil {
 				QLog.debug("Adding a header<" + key + "=" + value + ">");
 			}
 		}
+		// post.addHeader("charset", "UTF-8");
 		HttpEntity entity = null;
 		if ( entityParam instanceof Map<?, ?> ) {
 			Map<?, ?> entities = (Map<?, ?>) entityParam;
@@ -138,32 +230,75 @@ public class QHttpUtil {
 			for ( Object key : entities.keySet() ) {
 				String value = String.valueOf(entities.get(key));
 				entityPair.add(new BasicNameValuePair(String.valueOf(key), value));
-				QLog.debug("Adding a pair of entity<" + key + "=" + value + ">");
+				QLog.debug("Adding a pair of entity<" + key + "=" + QStringUtil.cutStringWithEllipsis(value, MAX_DEBUG_STRING_LENGTH - 3) + ">");
 			}
 			entity = new UrlEncodedFormEntity(entityPair);
 		} else {
-			QLog.debug("Adding a single string entity<" + QStringUtil.cutStringWithEllipsis(entityParam, 47) + ">");
-			entity = new StringEntity(String.valueOf(entityParam));
+			QLog.debug("Adding a single string entity<" + QStringUtil.cutStringWithEllipsis(entityParam, MAX_DEBUG_STRING_LENGTH - 3) + ">");
+			entity = new StringEntity(String.valueOf(entityParam), "UTF-8");
 		}
 
 		post.setEntity(entity);
 		HttpResponse response = client.execute(post);
-		QLog.debug("\nSending 'POST' request to URL : " + urlWithParams);
-		QLog.debug("Post parameters : " + post.getEntity());
-		QLog.debug("Response Code : " + response.getStatusLine().getStatusCode());
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-		String line = null;
-		while ( (line = br.readLine()) != null ) {
-			retStr = (retStr == null ? "" : retStr) + line + "\n";
+		if ( QLog.isDebugMode() ) {
+			QLog.debug("Sending 'POST' request to URL: " + urlWithParams);
+			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
+			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
 		}
 
-		return retStr.replaceAll("\n$", "");
+		return response;
 
 	}
 
-	@SuppressWarnings("serial")
+	private static void patchUrlWithParamMap(StringBuilder paramUrl, LinkedHashMap<String, List<String>> paramMap) {
+		if ( !paramMap.isEmpty() ) {
+			for ( String key : paramMap.keySet() ) {
+				List<String> values = paramMap.get(key);
+				for ( String value : values ) {
+					paramUrl.append(paramUrl.length() == 0 ? "?" : "&").append(key).append("=").append(toUrlString(value));
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static StringBuilder buildUrlWithArgs(String url, Object... args) {
+		StringBuilder urlSb = new StringBuilder();
+		boolean kvSwitch = true;
+		Object key = null;
+		for ( int i = 0; i < args.length; i++ ) {
+			if ( args[i] instanceof LinkedHashMap<?, ?> ) {
+				try {
+					patchUrlWithParamMap(urlSb, (LinkedHashMap<String, List<String>>) args[i]);
+				} catch ( Throwable t ) {
+				}
+			} else {
+				if ( kvSwitch ) {
+					// key
+					key = args[i];
+					if ( key == null || i + 1 >= args.length ) {
+						continue;
+					}
+					key = toUrlString(key);
+				} else {
+					// value
+					if ( args[i] instanceof List ) {
+						List<?> values = (List<?>) args[i];
+						for ( Object value : values ) {
+							urlSb.append(urlSb.length() == 0 ? "?" : "&").append(key).append("=").append(toUrlString(value));
+						}
+					} else {
+						Object value = args[i];
+						urlSb.append(urlSb.length() == 0 ? "?" : "&").append(key).append("=").append(toUrlString(value));
+					}
+				}
+				kvSwitch = !kvSwitch;
+			}
+		}
+		return new StringBuilder(url.replaceFirst("/$", "")).append(urlSb);
+	}
+
 	public static void main(String[] args) throws Exception {
 		// QLog.setDebugFlag(true);
 		//
@@ -175,8 +310,23 @@ public class QHttpUtil {
 		// add("4");
 		// }
 		// }, "timeout", 500));
-		System.out.println(
-				java.net.URLEncoder.encode("a< >b", "UTF-8")
+		StringBuilder sb = new StringBuilder();
+		sb = buildUrlWithArgs("http://abc/xyz/", "a", new ParameterMap() {
+			{
+				add("x", 10);
+				add("y", 11);
+				add("z", 12);
+			}
+		}, 1, "b", new ArrayList<String>() {
+			{
+				add("i");
+				add("ii");
+				add("iii");
+			}
+		}, "c", 3, "d", 4
+		//
+		);
+		System.out.println(sb
 		//
 		);
 		// String urlPost = "http://localhost:8080/script-caller-service/webapi/post";

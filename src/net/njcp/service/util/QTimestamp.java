@@ -134,6 +134,7 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 			long remainder = (timeInMillis + tzOffset) % intervalInMillis;
 			timeInMillis = timeInMillis - remainder;
 			this.cal.setTimeInMillis(timeInMillis);
+			setNanos(this.cal.get(MILLISECOND) * 1000000);
 			break;
 		}
 		this.interval = interval.intValue();
@@ -533,7 +534,8 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 	}
 
 	public static void main(String[] args) {
-		QLog.println(niceDisplay(12000));
+		QTimestamp qt = QTimestamp.valueOf(new Timestamp(System.currentTimeMillis()));
+		qt.trunc(10);
 	}
 
 }
