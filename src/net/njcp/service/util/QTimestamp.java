@@ -133,8 +133,7 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 			long timeInMillis = getTime();
 			long remainder = (timeInMillis + tzOffset) % intervalInMillis;
 			timeInMillis = timeInMillis - remainder;
-			this.cal.setTimeInMillis(timeInMillis);
-			setNanos(this.cal.get(MILLISECOND) * 1000000);
+			setTime(timeInMillis);
 			break;
 		}
 		this.interval = interval.intValue();
@@ -191,6 +190,7 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 
 	public void setTime(long timeInMillis) {
 		this.cal.setTimeInMillis(timeInMillis);
+		setNanos(get(MILLISECOND) * 1000000);
 	}
 
 	public long getTime() {
@@ -227,6 +227,10 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 	}
 
 	public static int get(Date date, int field) {
+		return QTimestamp.valueOf(date).get(field);
+	}
+
+	public static int get(Object date, int field) {
 		return QTimestamp.valueOf(date).get(field);
 	}
 
@@ -302,6 +306,7 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 
 	public void setMillis(int millis) {
 		set(Calendar.MILLISECOND, millis);
+		setNanos(millis * 1000000);
 	}
 
 	public static Date add(Date date, int timeUnit, int offset) {
@@ -535,7 +540,11 @@ public class QTimestamp implements Serializable, Cloneable, Comparable<QTimestam
 
 	public static void main(String[] args) {
 		QTimestamp qt = QTimestamp.valueOf(new Timestamp(System.currentTimeMillis()));
-		qt.trunc(10);
+		System.out.println(qt);
+		qt.trunc(100);
+		System.out.println(qt);
+		qt.setDay(1);
+		System.out.println(qt);
 	}
 
 }

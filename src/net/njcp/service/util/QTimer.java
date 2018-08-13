@@ -41,6 +41,8 @@ public class QTimer {
 			Long lastTimeMark = getMarkMap().get(mark);
 			if ( lastTimeMark == null ) {
 				lastTimeMark = (Long) getMarkMap().values().toArray()[getMarkMap().size() - 1];
+			} else {
+				getMarkMap().remove(mark);
 			}
 			tiemElapsed = System.currentTimeMillis() - lastTimeMark;
 		}

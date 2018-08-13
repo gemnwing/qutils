@@ -1,5 +1,6 @@
 package net.njcp.service.util;
 
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -318,6 +319,24 @@ public class QStringUtil {
 		return retList;
 	}
 
+	public static String separate(Object paramStr, String separator) {
+		if ( paramStr == null ) {
+			return null;
+		}
+		String origStr = String.valueOf(paramStr);
+		if ( separator == null ) {
+			return origStr;
+		}
+		StringBuilder retSb = new StringBuilder();
+		for ( int i = 0; i < origStr.length(); i++ ) {
+			retSb.append(origStr.substring(i, i + 1));
+			if ( i != origStr.length() - 1 ) {
+				retSb.append(separator);
+			}
+		}
+		return retSb.toString();
+	}
+
 	/**
 	 * @param paramStr
 	 * @param regex is a regex pattern
@@ -338,7 +357,33 @@ public class QStringUtil {
 		return retStr;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T castTo(Class<T> clazz, Object param) {
+		T retVal = null;
+		if ( param != null ) {
+			try {
+				String paramStr = String.valueOf(param).trim();
+				if ( !paramStr.isEmpty() ) {
+					if ( clazz == String.class ) {
+						retVal = (T) param.toString();
+					} else {
+						Method m = clazz.getMethod("valueOf", String.class);
+						retVal = (T) m.invoke(clazz, paramStr);
+					}
+				}
+			} catch ( Throwable t ) {
+			}
+		}
+		return retVal;
+	}
+
 	public static void main(String[] args) {
-		System.out.println(extract("5 more tries and I'll do it, I REALLY mean it this time.","REA.*LLY"));
+		System.out.println(
+				"@" +
+				// test start
+				// separate("#$%^&附近的快乐撒放进3214口袋连上", " ")
+						extract("/Users/Dominic/Downloads/downloader_mac.d.m1g-a", "\\.[^\\.]+$")
+						// test end
+						+ "@");
 	}
 }

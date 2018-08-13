@@ -720,10 +720,10 @@ public class QLog {
 				}
 			}
 		}
-		if ( level == Level.PRINT || getDebugFlag() || level.ordinal() >= Level.INFO.ordinal() ) {
-			if ( !getDebugFlag() ) {
-				level = Level.PRINT;
-			}
+		if ( level == Level.PRINT || getDebugFlag() ) {
+			// if ( level.ordinal() >= Level.INFO.ordinal() ) {
+			// level = Level.PRINT;
+			// }
 			logStr = genFakePrefix(level, caller) + logStr;
 			System.out.println(logStr);
 			if ( e != null ) {

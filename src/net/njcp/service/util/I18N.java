@@ -55,12 +55,12 @@ public class I18N {
 	@SuppressWarnings("serial")
 	public static final List<String> NON_PATCH_METHODS = new ArrayList<String>() {
 		{
-			add("System\\.get.*");	// system to get env
-			add("System\\.set.*");	// system to set env
-			add(".*\\.get");	// to get from some map
-			add(".*\\.*put");	// to put in some map
-			add(".*\\.getTaskManager");	// to get task manager
-			add(".*\\.getBean");	// to get task manager
+			add("System\\.get.*");    // system to get env
+			add("System\\.set.*");    // system to set env
+			add(".*\\.get");    // to get from some map
+			add(".*\\.*put");    // to put in some map
+			add(".*\\.getTaskManager");    // to get task manager
+			add(".*\\.getBean");    // to get task manager
 
 			/* string methods */
 			add(".*\\.startsWith");
@@ -513,7 +513,7 @@ public class I18N {
 					updated = true;
 				} else {
 					String refStr = StringEscapeUtils.unescapeJava(source).replaceAll(ONLY_SYMBOL, "").toLowerCase();
-					if ( message != null ) {	// new message: not null, old message: null
+					if ( message != null ) {    // new message: not null, old message: null
 						for ( String origin : oldUnescapedBundle.keySet() ) {
 							if ( StringEscapeUtils.unescapeJava(origin).replaceAll(ONLY_SYMBOL, "").toLowerCase().equals(refStr) ) {
 								oldSource = origin;
@@ -521,7 +521,7 @@ public class I18N {
 								break;
 							}
 						}
-					} else if ( oldMessage != null ) {	// new message: null, old message: not null
+					} else if ( oldMessage != null ) {    // new message: null, old message: not null
 						for ( String origin : newUnescapedBundle.keySet() ) {
 							if ( StringEscapeUtils.unescapeJava(origin).replaceAll(ONLY_SYMBOL, "").toLowerCase().equals(refStr) ) {
 								newSource = origin;
@@ -789,7 +789,7 @@ public class I18N {
 			}
 		} catch (
 
-		IOException e ) {
+				IOException e ) {
 			QLog.error("Failed to patch file \"" + javaFile.getAbsolutePath() + "\".", e);
 		}
 
@@ -924,7 +924,7 @@ public class I18N {
 				}
 				if ( bracketLevel == 0 && !bracketedContentHasAPlusSign
 						&& (curChar == '+' && (lastChar == '"' || String.valueOf(lastChar).matches("[^0-9]"))
-								|| (lastChar == '+' && (curChar == '"' || String.valueOf(curChar).matches("[^0-9 \t]")))) ) {
+						|| (lastChar == '+' && (curChar == '"' || String.valueOf(curChar).matches("[^0-9 \t]")))) ) {
 					bracketedContentHasAPlusSign = true;
 				}
 			}

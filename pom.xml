@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sgcc.sgepri.QUtils</groupId>
 	<artifactId>qutils</artifactId>
@@ -8,8 +7,9 @@
 	<!-- 增加源码文件编码属性，可以防止编译是发出使用默认编码的警告 -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<springframework.version>3.2.9.RELEASE</springframework.version>
+		<hibernate.version>3.6.9.Final</hibernate.version>
 	</properties>
-
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -33,28 +33,32 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
-					<!-- <includes> <include>I18N.java</include> <include>I18NGUI.java</include> 
+					<!-- <includes> <include>I18N.java</include> <include>I18NGUI.java</include>
 						<include>Q*.java</include> </includes> -->
 				</configuration>
 			</plugin>
-			<!-- <plugin> <artifactId>maven-jar-plugin</artifactId> <configuration> 
+			<!-- <plugin> <artifactId>maven-jar-plugin</artifactId> <configuration>
 				<skip>true</skip> </configuration> </plugin> -->
 		</plugins>
 	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${springframework.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
-
-
 		<dependency>
 			<groupId>apache-common-library</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
-
-		<!-- <dependency> <groupId>log-library</groupId> <artifactId>log4j</artifactId> 
-			<version>0</version> </dependency> -->
-
-		<!-- <dependency> <groupId>log-library</groupId> <artifactId>commons-logging</artifactId> 
-			<version>1.0.3</version> </dependency> -->
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
@@ -65,9 +69,6 @@
 			<artifactId>commons-logging</artifactId>
 			<version>1.2</version>
 		</dependency>
-		<!-- <dependency> <groupId>commons-logging</groupId> <artifactId>commons-logging</artifactId> 
-			<version>1.1.1</version> <scope>system</scope> <systemPath>/Users/Dominic/Developer/osp/sguap-server/WEB-INF/repository/platform/thirdparty/org.apache.commons.logging_1.1.1.jar</systemPath> 
-			</dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
@@ -76,12 +77,60 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>3.1.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.10</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>5.2.1.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator-annotation-processor</artifactId>
+			<version>5.2.1.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>driver-library.jdbc</groupId>
+			<artifactId>Dm7JdbcDriver16</artifactId>
+			<version>0</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.5.4</version>
 		</dependency>
 	</dependencies>
 

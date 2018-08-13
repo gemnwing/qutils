@@ -113,115 +113,68 @@ public class QParam extends Properties {
 		if ( value == null ) {
 			value = defaultValue;
 		}
-		return (value == null) ? "" : value.toString();
+		return (value == null) ? null : value.toString();
 	}
 
 	public String getString(Object key, Object defaultValue) {
 		return get(key, defaultValue);
 	}
 
+	public <T> T getAs(Class<T> clazz, Object key, T defaultValue) {
+		T retVal = QStringUtil.castTo(clazz, super.get(key));
+		return (retVal == null ? defaultValue : retVal);
+	}
+
 	public Double getDouble(Object key, Double defaultValue) {
-		try {
-			return Double.valueOf(get(key, defaultValue));
-		} catch ( Exception e ) {
-			return defaultValue;
-		}
+		return getAs(Double.class, key, defaultValue);
 	}
 
 	public Boolean getBoolean(Object key, Boolean defaultValue) {
-		try {
-			Integer value = Integer.valueOf(get(key, defaultValue));
-			return value >= 1;
-		} catch ( Exception e ) {
-			return defaultValue;
-		}
+		return getAs(Integer.class, key, (defaultValue == null ? 0 : (defaultValue ? 1 : 0))) > 0;
 	}
 
 	public Long getLong(Object key, Long defaultValue) {
-		try {
-			return Long.valueOf(get(key, defaultValue));
-		} catch ( Exception e ) {
-			return defaultValue;
-		}
+		return getAs(Long.class, key, defaultValue);
 	}
 
 	public Integer getInteger(Object key, Integer defaultValue) {
-		try {
-			return Integer.valueOf(get(key, defaultValue));
-		} catch ( Exception e ) {
-			return defaultValue;
-		}
+		return getAs(Integer.class, key, defaultValue);
 	}
 
 	public Timestamp getTimestamp(Object key, Timestamp defaultValue) {
-		QTimestamp retTime = getQTimestamp(key, null);
-		if ( retTime == null ) {
-			return defaultValue;
-		} else {
-			return retTime.toTimestamp();
-		}
+		return getAs(Timestamp.class, key, defaultValue);
 	}
 
 	public QTimestamp getQTimestamp(Object key, QTimestamp defaultValue) {
-		try {
-			return QTimestamp.valueOf(get(key, defaultValue));
-		} catch ( Exception e ) {
-			return defaultValue;
-		}
-	}
-
-	public List<String> getStringCSVList(Object key) {
-		List<String> retList = new ArrayList<String>();
-		String value = getString(key, "");
-		if ( value != null && !value.isEmpty() ) {
-			String[] tmpArray = value.split(",");
-			if ( tmpArray.length > 0 ) {
-				for ( String s : tmpArray ) {
-					s = s.trim();
-					if ( s != null && !s.isEmpty() ) {
-						retList.add(s);
-					}
-				}
-			}
-		}
-		return retList;
+		return getAs(QTimestamp.class, key, defaultValue);
 	}
 
 	public List<Integer> getIntegerCSVList(Object key) {
-		List<Integer> retList = new ArrayList<Integer>();
-		String value = getString(key, "");
-		if ( value != null && !value.isEmpty() ) {
-			String[] tmpArray = value.split(",");
-			if ( tmpArray.length > 0 ) {
-				for ( String s : tmpArray ) {
-					s = s.trim();
-					if ( s != null && !s.isEmpty() ) {
-						try {
-							retList.add(Integer.valueOf(s));
-						} catch ( Exception e ) {
-
-						}
-					}
-				}
-			}
-		}
-		return retList;
+		return getCSVList(Integer.class, key);
 	}
 
 	public List<Long> getLongCSVList(Object key) {
-		List<Long> retList = new ArrayList<Long>();
-		String value = getString(key, "");
-		if ( value != null && !value.isEmpty() ) {
-			String[] tmpArray = value.split(",");
-			if ( tmpArray.length > 0 ) {
-				for ( String s : tmpArray ) {
-					s = s.trim();
-					if ( s != null && !s.isEmpty() ) {
-						try {
-							retList.add(Long.valueOf(s));
-						} catch ( Exception e ) {
+		return getCSVList(Long.class, key);
+	}
 
-						}
+	public List<Double> getDoubleCSVList(Object key) {
+		return getCSVList(Double.class, key);
+	}
+
+	public List<String> getStringCSVList(Object key) {
+		return getCSVList(String.class, key);
+	}
+
+	public <T> List<T> getCSVList(Class<T> clazz, Object key) {
+		List<T> retList = new ArrayList<T>();
+		String value = getString(key, null);
+		if ( value != null && !value.trim().isEmpty() ) {
+			String[] argArr = value.split(",");
+			if ( argArr.length > 0 ) {
+				for ( String arg : argArr ) {
+					arg = arg.trim().replaceAll("(^\"|\"$)", "");
+					if ( !arg.isEmpty() ) {
+						retList.add(QStringUtil.castTo(clazz, arg));
 					}
 				}
 			}
@@ -531,22 +484,6 @@ public class QParam extends Properties {
 		QParam.defaultCharset = defaultCharset;
 	}
 
-	public static void main(String[] args) {
-		String confFile = "/Users/Dominic/Developer/apache-tomcat-7.0.85/conf/script-caller.conf";
-		QParam param = new QParam().load(confFile);
-		// QLog.println(param.get("test1"));
-		param.put("sub", "test2", param.getInteger("test2", 1) + 1);
-		QLog.println(param);
-		for ( Object key : param.keySet() ) {
-			QLog.println(key.getClass().getSimpleName() + " " + key + " = " + param.getString(key.toString(), "xx"));
-		}
-		// QLog.println(param.getObject("test1"));
-		// QLog.println(param.getSubParam("sub"));
-		// QLog.println(param.get("test1"));
-		// QLog.println(param.getInteger("test1", 1));
-		param.save();
-	}
-
 	public StackTraceElement getCaller() {
 		if ( this.caller == null ) {
 			this.caller = new Throwable().getStackTrace()[2];
@@ -556,6 +493,23 @@ public class QParam extends Properties {
 
 	public void setCaller(StackTraceElement caller) {
 		this.caller = caller;
+	}
+
+	public static void main(String[] args) {
+		String confFile = "/Users/Dominic/Developer/apache-tomcat-7.0.85/conf/a.conf";
+		QParam param = new QParam().load(confFile);
+		// QLog.println(param.get("test1"));
+		// param.put("sub", "test2", param.getInteger("test2", 1) + 1);
+		// QLog.println(param);
+		// for ( Object key : param.keySet() ) {
+		// QLog.println(key.getClass().getSimpleName() + " " + key + " = " + param.getString(key.toString(), "xx"));
+		// }
+		// // QLog.println(param.getObject("test1"));
+		// QLog.println(param.getSubParam("sub"));
+		// QLog.println(param.get("test1"));
+		// QLog.println(param.getInteger("test1", 1));
+		// param.save();
+		System.out.println(param.getStringCSVList("date"));
 	}
 
 }

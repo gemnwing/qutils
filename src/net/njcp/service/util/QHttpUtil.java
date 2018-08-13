@@ -158,10 +158,11 @@ public class QHttpUtil {
 		request.addHeader("User-Agent", USER_AGENT);
 		request.addHeader("charset", "UTF-8");
 
+		QLog.debug("Sending 'GET' request to URL: " + urlWithParams);
+
 		HttpResponse response = client.execute(request);
 
 		if ( QLog.isDebugMode() ) {
-			QLog.debug("Sending 'GET' request to URL: " + urlWithParams);
 			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
 			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
 		}
@@ -176,10 +177,15 @@ public class QHttpUtil {
 			try {
 				for ( HeaderElement element : response.getHeaders("Content-Type")[0].getElements() ) {
 					NameValuePair nv = element.getParameterByName("charset");
-					charset = Charset.forName(nv.getValue());
+					if ( nv != null ) {
+						charset = Charset.forName(nv.getValue());
+					}
 					break;
 				}
 			} catch ( Throwable t ) {
+				charset = null;
+			}
+			if ( charset == null ) {
 				charset = Charset.defaultCharset();
 			}
 			BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), charset));
@@ -239,10 +245,12 @@ public class QHttpUtil {
 		}
 
 		post.setEntity(entity);
+
+		QLog.debug("Sending 'POST' request to URL: " + urlWithParams);
+
 		HttpResponse response = client.execute(post);
 
 		if ( QLog.isDebugMode() ) {
-			QLog.debug("Sending 'POST' request to URL: " + urlWithParams);
 			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
 			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
 		}
