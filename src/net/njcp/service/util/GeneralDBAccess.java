@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class GeneralDBAccess implements QDBAccess {
 	private DataSource dataSource;
@@ -311,16 +310,16 @@ public class GeneralDBAccess implements QDBAccess {
 	}
 
 	public static void main(String[] args) throws Exception {
-//		ClassPathXmlApplicationContext a = new ClassPathXmlApplicationContext("qutils.workspace.applicationcontext.xml");
-//		GeneralDBAccess g = a.getBean(GeneralDBAccess.class);
-//		// g.setConfigLocation("dbaccess.properties");
-//		System.out.println(
-//				//
-//				g.executeSQLQuery("select sysdate from dual;").get(0)[0]
-//		//
-//		);
-//		g.close();
-//		a.close();
+		// ClassPathXmlApplicationContext a = new ClassPathXmlApplicationContext("qutils.workspace.applicationcontext.xml");
+		// GeneralDBAccess g = a.getBean(GeneralDBAccess.class);
+		// // g.setConfigLocation("dbaccess.properties");
+		// System.out.println(
+		// //
+		// g.executeSQLQuery("select sysdate from dual;").get(0)[0]
+		// //
+		// );
+		// g.close();
+		// a.close();
 	}
 
 }

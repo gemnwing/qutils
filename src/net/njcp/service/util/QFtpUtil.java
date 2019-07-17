@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import net.njcp.service.util.I18N;
+
 public abstract class QFtpUtil {
 
 	public static final int FTP = 0;
@@ -35,10 +37,10 @@ public abstract class QFtpUtil {
 				break;
 			default:
 				className = "unknown";
-				throw new QFtpException("Unknown FTP connection type, supported type: FTP(0) or SFTP(1).");
+				throw new QFtpException(I18N.tr("Unknown FTP connection type, supported type: FTP(0) or SFTP(1)."));
 			}
 		} catch ( Throwable t ) {
-			QLog.error("Failed to get a instance of class \"" + className + "\".", t);
+			QLog.error(I18N.tr("Failed to get a instance of class \"{0}\".", className), t);
 		}
 		if ( util != null ) {
 			util.setHost(host);
@@ -245,7 +247,7 @@ public abstract class QFtpUtil {
 		try {
 			LogoutNdisconnect();
 		} catch ( Throwable t ) {
-			QLog.error("Failed to close " + getType() + " client.", t);
+			QLog.error(I18N.tr("Failed to close {0} client.", getType()), t);
 		}
 	}
 
@@ -300,7 +302,7 @@ public abstract class QFtpUtil {
 
 	public static void main(String[] args) {
 		QFtpUtil ftp;
-		ftp = getInstance(SFTP, "192.1.105.17", "root", "root.2016", 22);
+		ftp = getInstance(SFTP, "192.1.105.17", "root", I18N.tr("root.2016"), 22);
 		// ftp = getInstance(FTP, "26.47.30.11", "d5000", "d5000");
 		try {
 			ftp.open();

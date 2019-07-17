@@ -24,10 +24,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.util.MultiValueMap;
 
+import net.njcp.service.util.I18N;
+
 public class QHttpUtil {
 
 	private final static String USER_AGENT = "Mozilla/5.0";
-	private final static String CHARSET = "UTF-8";
+	private final static String CHARSET = I18N.tr("UTF-8");
 	private final static int MAX_DEBUG_STRING_LENGTH = 50;
 
 	private static String toUrlString(Object str) {
@@ -126,13 +128,13 @@ public class QHttpUtil {
 			try {
 				final int equals = param.indexOf('=');
 				if ( equals > 0 ) {
-					String key = URLDecoder.decode(param.substring(0, equals), "UTF-8");
-					String value = URLDecoder.decode(param.substring(equals + 1), "UTF-8");
+					String key = URLDecoder.decode(param.substring(0, equals), I18N.tr("UTF-8"));
+					String value = URLDecoder.decode(param.substring(equals + 1), I18N.tr("UTF-8"));
 					params.add(key, value);
 				} else if ( equals == 0 ) {
 					// no key declared, ignore
 				} else if ( param.length() > 0 ) {
-					String key = URLDecoder.decode(param, "UTF-8");
+					String key = URLDecoder.decode(param, I18N.tr("UTF-8"));
 					params.add(key, "");
 				}
 			} catch ( final UnsupportedEncodingException ex ) {
@@ -156,15 +158,15 @@ public class QHttpUtil {
 
 		HttpGet request = new HttpGet(urlWithParams.toString());
 		request.addHeader("User-Agent", USER_AGENT);
-		request.addHeader("charset", "UTF-8");
+		request.addHeader("charset", I18N.tr("UTF-8"));
 
-		QLog.debug("Sending 'GET' request to URL: " + urlWithParams);
+		QLog.debug(I18N.tr("Sending 'GET' request to URL: {0}", urlWithParams));
 
 		HttpResponse response = client.execute(request);
 
 		if ( QLog.isDebugMode() ) {
-			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
-			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
+			QLog.debug(I18N.tr("Response Code: {0}", response.getStatusLine().getStatusCode()));
+			QLog.debug(I18N.tr("Response content:\n{0}", QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3)));
 		}
 		return response;
 
@@ -194,7 +196,7 @@ public class QHttpUtil {
 				retSb.append(line).append("\n");
 			}
 		} catch ( Throwable t ) {
-			QLog.error("Failed to get content from response.", t);
+			QLog.error(I18N.tr("Failed to get content from response."), t);
 		}
 		return retSb.toString().replaceAll("\n$", "");
 	}
@@ -225,7 +227,7 @@ public class QHttpUtil {
 			for ( Object key : headers.keySet() ) {
 				String value = String.valueOf(headers.get(key));
 				post.addHeader(String.valueOf(key), value);
-				QLog.debug("Adding a header<" + key + "=" + value + ">");
+				QLog.debug(I18N.tr("Adding a header<{0}={1}>", key, value));
 			}
 		}
 		// post.addHeader("charset", "UTF-8");
@@ -236,23 +238,23 @@ public class QHttpUtil {
 			for ( Object key : entities.keySet() ) {
 				String value = String.valueOf(entities.get(key));
 				entityPair.add(new BasicNameValuePair(String.valueOf(key), value));
-				QLog.debug("Adding a pair of entity<" + key + "=" + QStringUtil.cutStringWithEllipsis(value, MAX_DEBUG_STRING_LENGTH - 3) + ">");
+				QLog.debug(I18N.tr("Adding a pair of entity<{0}={1}>", key, QStringUtil.cutStringWithEllipsis(value, MAX_DEBUG_STRING_LENGTH - 3)));
 			}
 			entity = new UrlEncodedFormEntity(entityPair);
 		} else {
-			QLog.debug("Adding a single string entity<" + QStringUtil.cutStringWithEllipsis(entityParam, MAX_DEBUG_STRING_LENGTH - 3) + ">");
-			entity = new StringEntity(String.valueOf(entityParam), "UTF-8");
+			QLog.debug(I18N.tr("Adding a single string entity<{0}>", QStringUtil.cutStringWithEllipsis(entityParam, MAX_DEBUG_STRING_LENGTH - 3)));
+			entity = new StringEntity(String.valueOf(entityParam), I18N.tr("UTF-8"));
 		}
 
 		post.setEntity(entity);
 
-		QLog.debug("Sending 'POST' request to URL: " + urlWithParams);
+		QLog.debug(I18N.tr("Sending 'POST' request to URL: {0}", urlWithParams));
 
 		HttpResponse response = client.execute(post);
 
 		if ( QLog.isDebugMode() ) {
-			QLog.debug("Response Code: " + response.getStatusLine().getStatusCode());
-			QLog.debug("Response content:\n" + QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3));
+			QLog.debug(I18N.tr("Response Code: {0}", response.getStatusLine().getStatusCode()));
+			QLog.debug(I18N.tr("Response content:\n{0}", QStringUtil.cutStringWithEllipsis(getContent(response).replaceAll("\n", ""), MAX_DEBUG_STRING_LENGTH - 3)));
 		}
 
 		return response;
@@ -331,12 +333,10 @@ public class QHttpUtil {
 				add("ii");
 				add("iii");
 			}
-		}, "c", 3, "d", 4
 		//
-		);
-		System.out.println(sb
+		}, "c", 3, "d", 4 );
 		//
-		);
+		System.out.println(sb );
 		// String urlPost = "http://localhost:8080/script-caller-service/webapi/post";
 		// QLog.println(sendPost(urlPost));
 

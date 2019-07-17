@@ -377,13 +377,37 @@ public class QStringUtil {
 		return retVal;
 	}
 
+	public static String squeeze(String src, String... args) {
+		String retStr = src;
+		if ( args.length == 0 ) {
+			StringBuilder sb = new StringBuilder();
+			Character lastCh = null;
+			for ( int i = 0; i < src.length(); i++ ) {
+				char ch = src.charAt(i);
+				if ( lastCh == null || lastCh != ch ) {
+					sb.append(ch);
+				}
+				lastCh = ch;
+			}
+			retStr = sb.toString();
+		} else {
+			for ( String arg : args ) {
+				retStr = retStr.replaceAll("(" + arg + ")+", arg);
+			}
+		}
+		return retStr;
+	}
+
 	public static void main(String[] args) {
-		System.out.println(
-				"@" +
-				// test start
-				// separate("#$%^&附近的快乐撒放进3214口袋连上", " ")
-						extract("/Users/Dominic/Downloads/downloader_mac.d.m1g-a", "\\.[^\\.]+$")
-						// test end
-						+ "@");
+		// System.out.println(
+		// "@" +
+		// // test start
+		// // separate("#$%^&附近的快乐撒放进3214口袋连上", " ")
+		// extract("/Users/Dominic/Downloads/downloader_mac.d.m1g-a", "\\.[^\\.]+$")
+		// // test end
+		// + "@");
+		System.out.println(squeeze("xxxxxaxxxxyyyyyyyyyzzzyzzzzzzz1111112222x2222....."));
+		System.out.println(QStringUtil.cutString(QStringUtil.extract("JL_20180811_143500_SCADA_YC.DT", "^[^_]+"), 12));
+		QParam param = new QParam();
 	}
 }

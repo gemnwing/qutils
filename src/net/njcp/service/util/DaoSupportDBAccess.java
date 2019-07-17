@@ -131,7 +131,6 @@ public class DaoSupportDBAccess extends HibernateDaoSupport implements QDBAccess
 	}
 
 	public static void main(String[] args) {
-
 	}
 
 }

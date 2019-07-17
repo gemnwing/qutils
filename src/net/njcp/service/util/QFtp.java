@@ -10,6 +10,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
+import net.njcp.service.util.I18N;
+
 public class QFtp extends QFtpUtil {
 
 	static final String name = "FTP";
@@ -35,11 +37,11 @@ public class QFtp extends QFtpUtil {
 		}
 		this.ftpClient.connect(getHost(), getPort());
 		if ( this.ftpClient.getReplyCode() != FTPReply.SERVICE_READY ) {
-			throw new QFtpException("Failed to connect to " + getHost() + ":" + getPort() + ".");
+			throw new QFtpException(I18N.tr("Failed to connect to {0}:{1}.", getHost(), getPort()));
 		}
 		this.ftpClient.login(getUser(), getPasswd());
 		if ( this.ftpClient.getReplyCode() != FTPReply.USER_LOGGED_IN ) {
-			throw new QFtpException("Login incorrect.");
+			throw new QFtpException(I18N.tr("Login incorrect."));
 		}
 		this.ftpClient.enterLocalPassiveMode();
 		this.ftpClient.setKeepAlive(true);
@@ -72,7 +74,7 @@ public class QFtp extends QFtpUtil {
 	void cd(String remotePath) throws Exception {
 		this.ftpClient.changeWorkingDirectory(remotePath);
 		if ( this.ftpClient.getReplyCode() != FTPReply.FILE_ACTION_OK ) {
-			throw new QFtpException("Failed to change working directory to \"" + remotePath + "\".");
+			throw new QFtpException(I18N.tr("Failed to change working directory to \"{0}\".", remotePath));
 		}
 	}
 
@@ -83,7 +85,7 @@ public class QFtp extends QFtpUtil {
 		boolean success = this.ftpClient.storeFile(dst, fis);
 		fis.close();
 		if ( !success ) {
-			throw new QFtpException("Ftp reply false while uploading.");
+			throw new QFtpException(I18N.tr("Ftp reply false while uploading."));
 		}
 	}
 
@@ -99,7 +101,7 @@ public class QFtp extends QFtpUtil {
 		boolean success = this.ftpClient.retrieveFile(src, fos);
 		fos.close();
 		if ( !success ) {
-			throw new QFtpException("Ftp reply false while downloading.");
+			throw new QFtpException(I18N.tr("Ftp reply false while downloading."));
 		}
 	}
 

@@ -496,7 +496,7 @@ public class QParam extends Properties {
 	}
 
 	public static void main(String[] args) {
-		String confFile = "/Users/Dominic/Developer/apache-tomcat-7.0.85/conf/a.conf";
+		String confFile = "/Users/Dominic/Downloads/NOBKP/a.conf";
 		QParam param = new QParam().load(confFile);
 		// QLog.println(param.get("test1"));
 		// param.put("sub", "test2", param.getInteger("test2", 1) + 1);
@@ -510,6 +510,7 @@ public class QParam extends Properties {
 		// QLog.println(param.getInteger("test1", 1));
 		// param.save();
 		System.out.println(param.getStringCSVList("date"));
+		System.out.println(param.getDouble("failureRate", 20D));
 	}
 
 }
