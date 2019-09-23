@@ -32,8 +32,8 @@
 				<!-- 增加maven编译插件的版本号，可防止进行版本号未指定警告，可选版本为2.3.2及3.1 -->
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 					<!-- <includes> <include>I18N.java</include> <include>I18NGUI.java</include>
 						<include>Q*.java</include> </includes> -->
 				</configuration>

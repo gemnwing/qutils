@@ -403,6 +403,21 @@ public class QParam extends Properties {
 		}
 	}
 
+	public static QParam parseArgs(String[] args) {
+		QParam retParam = new QParam();
+		for ( String arg : args ) {
+			if ( arg.contains("=") ) {
+				String[] prop = parseAProp(arg, false);
+				retParam.put(prop[0], prop[1]);
+			}
+		}
+		return retParam;
+	}
+
+	public static String[] parseAProp(String str) {
+		return parseAProp(str, false);
+	}
+
 	protected static String[] parseAProp(String line, boolean escape) {
 		StringBuilder keySb = new StringBuilder();
 		StringBuilder valueSb = null;
